@@ -185,7 +185,7 @@ for table_name in tables.keys():
 
 ```sql
 -- This table computes the First Earnings Performance, Rolling Performance and Rank of each UK Provider against the DWP expectations.
-create or replace table DATA_WAREHOUSE.BUSINESS_INTELLIGENCE.DWP_FE_BASE_DATA
+create or replace table DATA_WAREHOUSE.BI.FE_BASE_DATA
 as(
 WITH base AS (
     SELECT
@@ -273,7 +273,7 @@ FROM performance
 
 
 -- This table computes the TRNO (Tender Required Number of Outcomes) Performance, Rolling Performance and Rank of each UK Provider against the DWP expectations.
-create or replace table DATA_WAREHOUSE.BUSINESS_INTELLIGENCE.DWP_TRNO_BASE_DATA
+create or replace table DATA_WAREHOUSE.BI.TRNO_BASE_DATA
 as(
 WITH base AS (
     SELECT
@@ -361,7 +361,7 @@ FROM performance
 
 
 -- This table computes the MRNO (Minimum Required Number of Outcomes) Performance, Rolling Performance and Rank of each UK Provider against the DWP expectations.
-create or replace table DATA_WAREHOUSE.BUSINESS_INTELLIGENCE.DWP_MRNO_BASE_DATA
+create or replace table DATA_WAREHOUSE.BI.MRNO_BASE_DATA
 as(
 WITH base AS (
     SELECT
@@ -454,11 +454,6 @@ FROM performance
 4. **Visualisation in Power BI**  
    - Presentation tables are loaded into Power BI to create dashboards for SLT.  
    - Provides visual insights on AKG performance relative to other UK providers.
-  <details>
-  <summary>Click to view Dashboard Screenshot</summary>
- <img width="1311" height="736" alt="{8A0C6846-D00D-42FB-AFED-FA034B3396B1}" src="https://github.com/user-attachments/assets/193fd6dd-a100-4c83-a981-f915bcd2569c" />
-
-</details>
 
 ## Impact
 - Fully automated MI Pack processing, eliminating manual steps and providing visuals  
