@@ -181,7 +181,7 @@ for table_name in tables.keys():
 
 </details>
 <details>
-<summary><strong>Click to view Python Scipt</strong></summary>
+<summary><strong>Click to view SQL Scipt</strong></summary>
 
 ```sql
 -- This table computes the First Earnings Performance, Rolling Performance and Rank of each UK Provider against the DWP expectations.
