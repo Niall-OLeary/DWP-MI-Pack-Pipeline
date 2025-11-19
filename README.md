@@ -15,13 +15,13 @@ Previously, the DWP MI Pack had to be taken at face value or processed manually,
 This project automates the entire workflow:  
 
 1. **Receive MI Pack via Email**  
-   - CSV file containing performance data.
+   - Copy hidden tab containing DWP raw data into a CSV file.
 
 2. **Load into Snowflake Stage**  
    - CSV is uploaded to a Snowflake stage for processing.
 
 3. **ETL Process**  
-   - Python script extracts, transforms, and loads the data into **five Snowflake tables**.  
+   - Python script extracts, transforms, and loads the data from the stage into **five Snowflake tables**.  
    - SQL queries further transform the base tables into **three main presentation tables** for reporting.
   <details>
 <summary><strong>Click to view Python Scipt</strong></summary>
