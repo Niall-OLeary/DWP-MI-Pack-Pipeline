@@ -17,6 +17,20 @@ This project automates the entire workflow:
 1. **Receive MI Pack via Email**  
    - CSV file containing performance data.
 
+<details>
+<summary><strong>Click to view aggregation SQL code</strong></summary>
+
+```sql
+SELECT
+    site_id,
+    MONTH(report_date) AS month,
+    SUM(starts) AS total_starts,
+    SUM(completions) AS total_completions
+FROM raw_performance_data
+WHERE report_date >= DATEADD(month, -1, CURRENT_DATE)
+GROUP BY site_id, MONTH(report_date);
+```
+
 2. **Load into Snowflake Stage**  
    - CSV is uploaded to a Snowflake stage for processing.
 
