@@ -24,7 +24,7 @@ This project automates the entire workflow:
    - Python script extracts, transforms, and loads the data from the stage into **five Snowflake tables**.  
    - SQL queries further transform the base tables into **three main presentation tables** for reporting.
   <details>
-<summary><strong>Click to view Python Scipt</strong></summary>
+<summary><strong>Click to view Python Script</strong></summary>
 
 ```Python
 import pandas as pd
@@ -181,7 +181,7 @@ for table_name in tables.keys():
 
 </details>
 <details>
-<summary><strong>Click to view SQL Scipt</strong></summary>
+<summary><strong>Click to view SQL Script</strong></summary>
 
 ```sql
 -- This table computes the First Earnings Performance, Rolling Performance and Rank of each UK Provider against the DWP expectations.
@@ -448,7 +448,8 @@ FROM performance
 );
 ```
 
-</details>
+</details>  
+
 
 4. **Visualisation in Power BI**  
    - Presentation tables are loaded into Power BI to create dashboards for SLT.  
