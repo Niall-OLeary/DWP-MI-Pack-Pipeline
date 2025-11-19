@@ -180,6 +180,275 @@ for table_name in tables.keys():
 ```
 
 </details>
+<details>
+<summary><strong>Click to view Python Scipt</strong></summary>
+
+```sql
+-- This table computes the First Earnings Performance, Rolling Performance and Rank of each UK Provider against the DWP expectations.
+create or replace table DATA_WAREHOUSE.BUSINESS_INTELLIGENCE.DWP_FE_BASE_DATA
+as(
+WITH base AS (
+    SELECT
+        e.cpa,
+        TO_DATE(e."Date", 'MON-YY') as "Date",
+        e."Date" as "Month-Year",
+        e."Value" AS FE_Expected,
+        a."Value" AS FE_Actual,
+        DIV0(a."Value", e."Value") AS Performance
+    FROM  DWP_OVERALL_FES_ACHIEVED a
+    LEFT JOIN DWP_OVERALL_FEPI_EXPECTED e
+        ON a.cpa = e.cpa 
+       AND a."Date" = e."Date"
+),
+
+rolled AS (
+    SELECT
+        *,
+        -- Rolling 3 months
+        SUM(FE_Expected) OVER (PARTITION BY cpa ORDER BY "Date" ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) AS FE_Expected_Rolling_3,
+        SUM(FE_Actual)   OVER (PARTITION BY cpa ORDER BY "Date" ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) AS FE_Actual_Rolling_3,
+
+        -- Rolling 6 months
+        SUM(FE_Expected) OVER (PARTITION BY cpa ORDER BY "Date" ROWS BETWEEN 5 PRECEDING AND CURRENT ROW) AS FE_Expected_Rolling_6,
+        SUM(FE_Actual)   OVER (PARTITION BY cpa ORDER BY "Date" ROWS BETWEEN 5 PRECEDING AND CURRENT ROW) AS FE_Actual_Rolling_6,
+
+        -- Rolling 12 months
+        SUM(FE_Expected) OVER (PARTITION BY cpa ORDER BY "Date" ROWS BETWEEN 11 PRECEDING AND CURRENT ROW) AS FE_Expected_Rolling_12,
+        SUM(FE_Actual)   OVER (PARTITION BY cpa ORDER BY "Date" ROWS BETWEEN 11 PRECEDING AND CURRENT ROW) AS FE_Actual_Rolling_12,
+
+        -- Contract-to-date
+        SUM(FE_Expected) OVER (PARTITION BY cpa ORDER BY "Date" ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS FE_Expected_CTD,
+        SUM(FE_Actual)   OVER (PARTITION BY cpa ORDER BY "Date" ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS FE_Actual_CTD
+    FROM base
+),
+
+performance AS (
+    SELECT
+        *,
+        DIV0(FE_Actual_Rolling_3,  FE_Expected_Rolling_3)   AS Performance_Rolling_3,
+        DIV0(FE_Actual_Rolling_6,  FE_Expected_Rolling_6)   AS Performance_Rolling_6,
+        DIV0(FE_Actual_Rolling_12, FE_Expected_Rolling_12)  AS Performance_Rolling_12,
+        DIV0(FE_Actual_CTD,        FE_Expected_CTD)         AS Performance_CTD
+    FROM rolled
+)
+
+SELECT
+    *,
+    CASE WHEN cpa <> 'National'
+         THEN RANK() OVER (
+              PARTITION BY "Date" 
+              ORDER BY Performance DESC
+         )
+    END AS Performance_Rank,
+
+    CASE WHEN cpa <> 'National'
+         THEN RANK() OVER (
+              PARTITION BY "Date" 
+              ORDER BY Performance_Rolling_3 DESC
+         )
+    END AS Performance_Rolling_3_Rank,
+
+    CASE WHEN cpa <> 'National'
+         THEN RANK() OVER (
+              PARTITION BY "Date" 
+              ORDER BY Performance_Rolling_6 DESC
+         )
+    END AS Performance_Rolling_6_Rank,
+
+    CASE WHEN cpa <> 'National'
+         THEN RANK() OVER (
+              PARTITION BY "Date" 
+              ORDER BY Performance_Rolling_12 DESC
+         )
+    END AS Performance_Rolling_12_Rank,
+
+    CASE WHEN cpa <> 'National'
+         THEN RANK() OVER (
+              PARTITION BY "Date" 
+              ORDER BY Performance_CTD DESC
+         )
+    END AS Performance_CTD_Rank
+FROM performance
+);
+
+
+-- This table computes the TRNO (Tender Required Number of Outcomes) Performance, Rolling Performance and Rank of each UK Provider against the DWP expectations.
+create or replace table DATA_WAREHOUSE.BUSINESS_INTELLIGENCE.DWP_TRNO_BASE_DATA
+as(
+WITH base AS (
+    SELECT
+        e.cpa,
+        TO_DATE(e."Date", 'MON-YY') as "Date",
+        e."Date" as "Month-Year",
+        e."Value" AS JO_Expected,
+        a."Value" AS JO_Actual,
+        DIV0(a."Value", e."Value") AS Performance
+    FROM  dwp_overall_outcomes_achieved a
+    LEFT JOIN dwp_overall_tpl_expected e
+        ON a.cpa = e.cpa 
+       AND a."Date" = e."Date"
+),
+
+rolled AS (
+    SELECT
+        *,
+        -- Rolling 3 months
+        SUM(JO_Expected) OVER (PARTITION BY cpa ORDER BY "Date" ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) AS JO_Expected_Rolling_3,
+        SUM(JO_Actual)   OVER (PARTITION BY cpa ORDER BY "Date" ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) AS JO_Actual_Rolling_3,
+
+        -- Rolling 6 months
+        SUM(JO_Expected) OVER (PARTITION BY cpa ORDER BY "Date" ROWS BETWEEN 5 PRECEDING AND CURRENT ROW) AS JO_Expected_Rolling_6,
+        SUM(JO_Actual)   OVER (PARTITION BY cpa ORDER BY "Date" ROWS BETWEEN 5 PRECEDING AND CURRENT ROW) AS JO_Actual_Rolling_6,
+
+        -- Rolling 12 months
+        SUM(JO_Expected) OVER (PARTITION BY cpa ORDER BY "Date" ROWS BETWEEN 11 PRECEDING AND CURRENT ROW) AS JO_Expected_Rolling_12,
+        SUM(JO_Actual)   OVER (PARTITION BY cpa ORDER BY "Date" ROWS BETWEEN 11 PRECEDING AND CURRENT ROW) AS JO_Actual_Rolling_12,
+
+        -- Contract-to-date
+        SUM(JO_Expected) OVER (PARTITION BY cpa ORDER BY "Date" ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS JO_Expected_CTD,
+        SUM(JO_Actual)   OVER (PARTITION BY cpa ORDER BY "Date" ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS JO_Actual_CTD
+    FROM base
+),
+
+performance AS (
+    SELECT
+        *,
+        DIV0(JO_Actual_Rolling_3,  JO_Expected_Rolling_3)   AS Performance_Rolling_3,
+        DIV0(JO_Actual_Rolling_6,  JO_Expected_Rolling_6)   AS Performance_Rolling_6,
+        DIV0(JO_Actual_Rolling_12, JO_Expected_Rolling_12)  AS Performance_Rolling_12,
+        DIV0(JO_Actual_CTD,        JO_Expected_CTD)         AS Performance_CTD
+    FROM rolled
+)
+
+SELECT
+    *,
+    CASE WHEN cpa <> 'National'
+         THEN RANK() OVER (
+              PARTITION BY "Date" 
+              ORDER BY Performance DESC
+         )
+    END AS Performance_Rank,
+
+    CASE WHEN cpa <> 'National'
+         THEN RANK() OVER (
+              PARTITION BY "Date" 
+              ORDER BY Performance_Rolling_3 DESC
+         )
+    END AS Performance_Rolling_3_Rank,
+
+    CASE WHEN cpa <> 'National'
+         THEN RANK() OVER (
+              PARTITION BY "Date" 
+              ORDER BY Performance_Rolling_6 DESC
+         )
+    END AS Performance_Rolling_6_Rank,
+
+    CASE WHEN cpa <> 'National'
+         THEN RANK() OVER (
+              PARTITION BY "Date" 
+              ORDER BY Performance_Rolling_12 DESC
+         )
+    END AS Performance_Rolling_12_Rank,
+
+    CASE WHEN cpa <> 'National'
+         THEN RANK() OVER (
+              PARTITION BY "Date" 
+              ORDER BY Performance_CTD DESC
+         )
+    END AS Performance_CTD_Rank
+FROM performance
+);
+
+
+-- This table computes the MRNO (Minimum Required Number of Outcomes) Performance, Rolling Performance and Rank of each UK Provider against the DWP expectations.
+create or replace table DATA_WAREHOUSE.BUSINESS_INTELLIGENCE.DWP_MRNO_BASE_DATA
+as(
+WITH base AS (
+    SELECT
+        e.cpa,
+        TO_DATE(e."Date", 'MON-YY') as "Date",
+        e."Date" as "Month-Year",
+        e."Value" AS JO_Expected,
+        a."Value" AS JO_Actual,
+        DIV0(a."Value", e."Value") AS Performance
+    FROM  dwp_overall_outcomes_achieved a
+    LEFT JOIN dwp_overall_mpl_expected e
+        ON a.cpa = e.cpa 
+       AND a."Date" = e."Date"
+),
+
+rolled AS (
+    SELECT
+        *,
+        -- Rolling 3 months
+        SUM(JO_Expected) OVER (PARTITION BY cpa ORDER BY "Date" ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) AS JO_Expected_Rolling_3,
+        SUM(JO_Actual)   OVER (PARTITION BY cpa ORDER BY "Date" ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) AS JO_Actual_Rolling_3,
+
+        -- Rolling 6 months
+        SUM(JO_Expected) OVER (PARTITION BY cpa ORDER BY "Date" ROWS BETWEEN 5 PRECEDING AND CURRENT ROW) AS JO_Expected_Rolling_6,
+        SUM(JO_Actual)   OVER (PARTITION BY cpa ORDER BY "Date" ROWS BETWEEN 5 PRECEDING AND CURRENT ROW) AS JO_Actual_Rolling_6,
+
+        -- Rolling 12 months
+        SUM(JO_Expected) OVER (PARTITION BY cpa ORDER BY "Date" ROWS BETWEEN 11 PRECEDING AND CURRENT ROW) AS JO_Expected_Rolling_12,
+        SUM(JO_Actual)   OVER (PARTITION BY cpa ORDER BY "Date" ROWS BETWEEN 11 PRECEDING AND CURRENT ROW) AS JO_Actual_Rolling_12,
+
+        -- Contract-to-date
+        SUM(JO_Expected) OVER (PARTITION BY cpa ORDER BY "Date" ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS JO_Expected_CTD,
+        SUM(JO_Actual)   OVER (PARTITION BY cpa ORDER BY "Date" ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS JO_Actual_CTD
+    FROM base
+),
+
+performance AS (
+    SELECT
+        *,
+        DIV0(JO_Actual_Rolling_3,  JO_Expected_Rolling_3)   AS Performance_Rolling_3,
+        DIV0(JO_Actual_Rolling_6,  JO_Expected_Rolling_6)   AS Performance_Rolling_6,
+        DIV0(JO_Actual_Rolling_12, JO_Expected_Rolling_12)  AS Performance_Rolling_12,
+        DIV0(JO_Actual_CTD,        JO_Expected_CTD)         AS Performance_CTD
+    FROM rolled
+)
+
+SELECT
+    *,
+    CASE WHEN cpa <> 'National'
+         THEN RANK() OVER (
+              PARTITION BY "Date" 
+              ORDER BY Performance DESC
+         )
+    END AS Performance_Rank,
+
+    CASE WHEN cpa <> 'National'
+         THEN RANK() OVER (
+              PARTITION BY "Date" 
+              ORDER BY Performance_Rolling_3 DESC
+         )
+    END AS Performance_Rolling_3_Rank,
+
+    CASE WHEN cpa <> 'National'
+         THEN RANK() OVER (
+              PARTITION BY "Date" 
+              ORDER BY Performance_Rolling_6 DESC
+         )
+    END AS Performance_Rolling_6_Rank,
+
+    CASE WHEN cpa <> 'National'
+         THEN RANK() OVER (
+              PARTITION BY "Date" 
+              ORDER BY Performance_Rolling_12 DESC
+         )
+    END AS Performance_Rolling_12_Rank,
+
+    CASE WHEN cpa <> 'National'
+         THEN RANK() OVER (
+              PARTITION BY "Date" 
+              ORDER BY Performance_CTD DESC
+         )
+    END AS Performance_CTD_Rank
+FROM performance
+);
+```
+
+</details>
 
 4. **Visualisation in Power BI**  
    - Presentation tables are loaded into Power BI to create dashboards for SLT.  
