@@ -451,12 +451,12 @@ FROM performance
 </details>  
 
 
-4. **Visualisation in Power BI**  
+4. **Visualisation in Power BI**  (Unable to show due to sensitive DWP data)
    - Presentation tables are loaded into Power BI to create dashboards for SLT.  
    - Provides visual insights on AKG performance relative to other UK providers.
 
 ## Impact
-- Fully automated MI Pack processing, eliminating manual steps and providing visuals  
+- Fully automated MI Pack processing, eliminating manual steps and providing visualisations  
 - Faster and more reliable reporting for SLT  
 - Standardised and cleaned data, ready for BI visualisation  
 - Easy to scale and adapt for future reporting needs  
